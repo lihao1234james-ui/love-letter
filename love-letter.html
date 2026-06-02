@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>写给欣雅的一封情书 💌</title>
+
+    <!-- ==================== CSS 样式 ==================== -->
+    <style>
+        :root {
+            /* 柔和的樱花粉色系 */
+            --pink-lightest: #fdf2f4;
+            --pink-light: #fbe8eb;
+            --pink-soft: #f5d0d6;
+            --pink: #e8b4bc;
+            --pink-deep: #d4919e;
+            --pink-dark: #b8707e;
+            --rose: #c97d89;
+            --brown-warm: #5d4037;
+            --brown-light: #8d6e63;
+            --gold: #d4a574;
+            --gold-light: #e8d5c0;
+            --white-warm: #fffafb;
+            --white-card: #fff5f6;
+            --shadow-soft: 0 4px 20px rgba(180, 120, 130, 0.15);
+            --shadow-medium: 0 8px 32px rgba(180, 120, 130, 0.2);
+            --shadow-strong: 0 12px 40px rgba(160, 100, 110, 0.25);
+            --radius-sm: 12px;
+            --radius-md: 20px;
+            --radius-lg: 28px;
+            --font-cn: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Serif SC', 'STSong', 'Songti SC', serif;
+            --font-en: 'Georgia', 'Playfair Display', 'Times New Roman', serif;
+            --font-hand: 'KaiTi', 'STKaiti', '楷体', 'Georgia', serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
+        body {
+            font-family: var(--font-cn);
+            background: linear-gradient(180deg, #fef5f7 0%, #fdf0f3 15%, #fef7f8 30%, #fdf2f5 50%, #fef6f7 70%, #fdf0f3 85%, #fef5f7 100%);
+            color: var(--brown-warm);
+            line-height: 1.8;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ==================== 飘落花瓣画布 ==================== */
+        #petals-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ==================== 全局淡入动画 ==================== */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes softPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        @keyframes gentleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            15% { transform: scale(1.15); }
+            30% { transform: scale(1); }
+            45% { transform: scale(1.1); }
+            60% { transform: scale(1); }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 1s ease-out forwards;
+            opacity: 0;
+        }
+        .fade-in {
+            animation: fadeIn 1.2s ease-out forwards;
+            opacity: 0;
+        }
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+        .delay-4 { animation-delay: 0.8s; }
+        .delay-5 { animation-delay: 1.0s; }
+        .delay-6 { animation-delay: 1.2s; }
+
+        /* ==================== 唱片音乐播放器 ==================== */
+        .music-player {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 1000;
+            cursor: pointer;
+            width: 52px;
+            height: 52px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .music-player:hover {
+            transform: scale(1.12);
+        }
+
+        .vinyl-record {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at center,
+                #2a2a2a 0%, #2a2a2a 14%,
+                #c97d89 15%, #c97d89 17%,
+                #1a1a1a 18%, #1a1a1a 22%,
+                #333 23%, #333 25%,
+                #1a1a1a 26%, #1a1a1a 35%,
+                #444 36%, #444 38%,
+                #1a1a1a 39%, #1a1a1a 48%,
+                #333 49%, #333 51%,
+                #1a1a1a 52%, #1a1a1a 100%
+            );
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 0 0 2px rgba(255,255,255,0.05);
+            position: relative;
+            transition: all 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .vinyl-record.playing {
+            animation: spin 4s linear infinite;
+            box-shadow: 0 4px 28px rgba(201, 125, 137, 0.45), inset 0 0 0 2px rgba(255,255,255,0.05);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .vinyl-center {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #e8b4bc 0%, #c97d89 50%, #8d5058 100%);
+            box-shadow: 0 0 6px rgba(232, 180, 188, 0.5);
+            z-index: 2;
+        }
+
+        .tonearm {
+            position: absolute;
+            top: -2px;
+            right: -8px;
+            width: 28px;
+            height: 4px;
+            background: linear-gradient(135deg, #666, #999);
+            border-radius: 2px;
+            transform-origin: right center;
+            transform: rotate(-30deg);
+            transition: transform 0.5s ease;
+            z-index: 1;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .tonearm.playing {
+            transform: rotate(-15deg);
+        }
+
+        .music-tooltip {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: rgba(93, 64, 55, 0.92);
+            color: #fff;
+            font-size: 12px;
+            padding: 6px 14px;
+            border-radius: 16px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            font-family: var(--font-cn);
+            backdrop-filter: blur(10px);
+        }
+        .music-player:hover .music-tooltip {
+            opacity: 1;
+        }
+
+        /* ==================== Hero 区域 ==================== */
+        .hero {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 80px 24px 60px;
+        }
+
+        .hero-decoration {
+            font-size: 48px;
+            animation: gentleFloat 3s ease-in-out infinite;
+            margin-bottom: 16px;
+            user-select: none;
+        }
+
+        .hero-title {
+            font-family: var(--font-en);
+            font-size: clamp(2.2rem, 5vw, 3.8rem);
+            font-weight: 700;
+            color: var(--pink-dark);
+            letter-spacing: 0.04em;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            text-shadow: 0 2px 12px rgba(200, 120, 140, 0.15);
+        }
+        .hero-title .cn {
+            font-family: var(--font-cn);
+            font-size: clamp(1.8rem, 4vw, 3.2rem);
+            display: block;
+            margin-top: 4px;
+        }
+
+        .hero-heart {
+            display: inline-block;
+            animation: heartBeat 1.5s ease-in-out infinite;
+            color: var(--rose);
+            font-size: 1.1em;
+        }
+
+        .hero-subtitle {
+            font-family: var(--font-cn);
+            font-size: clamp(1rem, 2.2vw, 1.25rem);
+            color: var(--brown-light);
+            max-width: 600px;
+            margin: 20px auto 0;
+            line-height: 2;
+            letter-spacing: 0.03em;
+        }
+
+        .hero-scroll {
+            margin-top: 48px;
+            animation: gentleFloat 2.5s ease-in-out infinite;
+            opacity: 0.6;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--brown-light);
+            letter-spacing: 0.05em;
+            user-select: none;
+        }
+        .hero-scroll .arrow {
+            display: block;
+            font-size: 24px;
+            margin-top: 4px;
+        }
+
+        /* 装饰分隔线 */
+        .section-divider {
+            text-align: center;
+            padding: 20px 0;
+            font-size: 28px;
+            letter-spacing: 12px;
+            user-select: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ==================== 时间轴 ==================== */
+        .timeline-section {
+            position: relative;
+            z-index: 1;
+            padding: 60px 24px 80px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: var(--font-en);
+            font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+            text-align: center;
+            color: var(--pink-dark);
+            margin-bottom: 8px;
+            letter-spacing: 0.04em;
+        }
+        .section-title .cn-sub {
+            display: block;
+            font-family: var(--font-cn);
+            font-size: 0.5em;
+            color: var(--brown-light);
+            font-weight: 400;
+            margin-top: 4px;
+            letter-spacing: 0.06em;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 40px 0;
+        }
+
+        /* 时间轴中线 */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, transparent, var(--pink-soft), var(--pink), var(--pink-soft), transparent);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 60px;
+            position: relative;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .timeline-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .timeline-item:nth-child(odd) {
+            flex-direction: row;
+        }
+        .timeline-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        /* 时间轴小圆点 */
+        .timeline-dot {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 16px;
+            height: 16px;
+            background: var(--rose);
+            border-radius: 50%;
+            z-index: 2;
+            box-shadow: 0 0 0 6px rgba(201, 125, 137, 0.2), 0 0 16px rgba(201, 125, 137, 0.3);
+        }
+        .timeline-dot::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid rgba(201, 125, 137, 0.25);
+            animation: softPulse 3s ease-in-out infinite;
+        }
+
+        .timeline-card {
+            width: 44%;
+            background: var(--white-card);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(232, 180, 188, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .timeline-card:hover {
+            box-shadow: var(--shadow-medium);
+            transform: translateY(-4px);
+        }
+        .timeline-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--pink-soft), var(--rose), var(--pink-soft));
+            opacity: 0.6;
+        }
+
+        /* ==================== 图片占位样式 ==================== */
+        .timeline-card img,
+        .timeline-card .img-placeholder {
+            width: 100%;
+            height: auto;
+            min-height: 240px;
+            border-radius: var(--radius-sm);
+            object-fit: cover;
+            display: block;
+            box-shadow: 0 4px 16px rgba(160, 120, 130, 0.15);
+            border: 3px solid #fff;
+            transition: all 0.4s ease;
+            background: linear-gradient(135deg, #fdf0f3 0%, #fbe8ec 50%, #fdf0f3 100%);
+        }
+        .timeline-card img:hover {
+            box-shadow: 0 8px 28px rgba(160, 120, 130, 0.25);
+            transform: scale(1.02);
+        }
+
+        /* 图片未加载时的占位文字 */
+        .img-placeholder-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--pink-deep);
+            font-size: 14px;
+            text-align: center;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .timeline-label {
+            font-family: var(--font-cn);
+            font-size: 0.9rem;
+            color: var(--rose);
+            margin-top: 12px;
+            text-align: center;
+            letter-spacing: 0.04em;
+            font-weight: 500;
+        }
+
+        /* ==================== 情书区域 ==================== */
+        .letter-section {
+            position: relative;
+            z-index: 1;
+            padding: 60px 24px 80px;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .letter-card {
+            background: var(--white-card);
+            border-radius: var(--radius-lg);
+            padding: clamp(32px, 6vw, 56px) clamp(24px, 5vw, 48px);
+            box-shadow: var(--shadow-strong);
+            position: relative;
+            border: 1px solid rgba(232, 180, 188, 0.25);
+            /* 信纸纹理 */
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 31px, rgba(232, 180, 188, 0.08) 31px, rgba(232, 180, 188, 0.08) 32px);
+            background-color: #fffdfd;
+        }
+
+        /* 信纸左上角装饰 */
+        .letter-card::before {
+            content: '💌';
+            position: absolute;
+            top: 20px;
+            left: 28px;
+            font-size: 28px;
+            opacity: 0.5;
+            user-select: none;
+        }
+
+        /* 信纸右下角装饰 */
+        .letter-card::after {
+            content: '💕';
+            position: absolute;
+            bottom: 20px;
+            right: 28px;
+            font-size: 24px;
+            opacity: 0.4;
+            user-select: none;
+        }
+
+        .letter-greeting {
+            font-family: var(--font-cn);
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--rose);
+            margin-bottom: 20px;
+            letter-spacing: 0.05em;
+        }
+
+        .letter-body {
+            font-family: var(--font-cn);
+            font-size: clamp(0.95rem, 1.8vw, 1.05rem);
+            color: var(--brown-warm);
+            line-height: 2.2;
+            letter-spacing: 0.03em;
+            text-indent: 2em;
+        }
+        .letter-body p {
+            margin-bottom: 16px;
+        }
+        .letter-body p:last-child {
+            text-indent: 0;
+        }
+
+        .letter-signature {
+            text-align: right;
+            margin-top: 32px;
+            font-family: var(--font-hand);
+            font-size: 1.15rem;
+            color: var(--pink-dark);
+            letter-spacing: 0.05em;
+            line-height: 2;
+        }
+        .letter-signature .name {
+            font-size: 1.4rem;
+            color: var(--rose);
+            font-weight: 600;
+        }
+        .letter-signature .date {
+            font-size: 0.9rem;
+            color: var(--brown-light);
+        }
+
+        /* ==================== 互动区域 ==================== */
+        .interactive-section {
+            position: relative;
+            z-index: 1;
+            padding: 60px 24px 80px;
+        }
+
+        .countdown-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 28px;
+            justify-content: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .countdown-card {
+            flex: 1 1 280px;
+            max-width: 380px;
+            background: var(--white-card);
+            border-radius: var(--radius-lg);
+            padding: 36px 28px;
+            text-align: center;
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(232, 180, 188, 0.2);
+            transition: all 0.4s ease;
+        }
+        .countdown-card:hover {
+            box-shadow: var(--shadow-medium);
+            transform: translateY(-3px);
+        }
+
+        .countdown-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            animation: gentleFloat 3s ease-in-out infinite;
+            user-select: none;
+        }
+
+        .countdown-title {
+            font-family: var(--font-cn);
+            font-size: 1rem;
+            color: var(--brown-light);
+            margin-bottom: 16px;
+            letter-spacing: 0.04em;
+        }
+
+        .countdown-timer {
+            font-family: var(--font-en);
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 700;
+            color: var(--rose);
+            letter-spacing: 0.02em;
+            line-height: 1.4;
+        }
+        .countdown-timer .unit {
+            font-size: 0.45em;
+            font-weight: 400;
+            color: var(--brown-light);
+            margin: 0 4px;
+        }
+        .countdown-timer .num {
+            display: inline-block;
+            min-width: 2ch;
+            text-align: center;
+            background: linear-gradient(135deg, var(--pink-lightest), var(--pink-light));
+            border-radius: 8px;
+            padding: 4px 8px;
+            margin: 0 2px;
+        }
+
+        .meet-countdown-extra {
+            margin-top: 16px;
+            font-size: 0.85rem;
+            color: var(--brown-light);
+            letter-spacing: 0.03em;
+        }
+
+        /* ==================== 底部 ==================== */
+        .footer {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 60px 24px 48px;
+            font-family: var(--font-en);
+            color: var(--brown-light);
+            letter-spacing: 0.05em;
+            line-height: 2;
+        }
+        .footer .cn {
+            font-family: var(--font-cn);
+            font-size: 1.1rem;
+            color: var(--rose);
+            display: block;
+            margin-bottom: 8px;
+            letter-spacing: 0.06em;
+        }
+        .footer .en {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            display: block;
+        }
+        .footer-decoration {
+            font-size: 20px;
+            letter-spacing: 8px;
+            margin-bottom: 20px;
+            user-select: none;
+        }
+
+        /* ==================== 响应式 ==================== */
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 20px;
+            }
+
+            .timeline-item,
+            .timeline-item:nth-child(even) {
+                flex-direction: column;
+                align-items: flex-start;
+                padding-left: 48px;
+            }
+
+            .timeline-dot {
+                left: 20px;
+            }
+
+            .timeline-card {
+                width: 100%;
+            }
+
+            .music-player {
+                top: 16px;
+                right: 16px;
+                width: 42px;
+                height: 42px;
+            }
+            .vinyl-center {
+                width: 10px;
+                height: 10px;
+            }
+            .tonearm {
+                width: 22px;
+                height: 3px;
+                top: -1px;
+                right: -6px;
+            }
+
+            .hero {
+                min-height: 90vh;
+                padding: 60px 16px 40px;
+            }
+
+            .letter-card {
+                padding: 28px 20px;
+            }
+            .letter-card::before { top: 12px; left: 16px; font-size: 22px; }
+            .letter-card::after { bottom: 12px; right: 16px; font-size: 18px; }
+
+            .countdown-container {
+                gap: 20px;
+            }
+            .countdown-card {
+                flex: 1 1 100%;
+                max-width: 100%;
+                padding: 28px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title { font-size: 1.8rem; }
+            .hero-title .cn { font-size: 1.5rem; }
+            .section-title { font-size: 1.5rem; }
+            .timeline-card img,
+            .timeline-card .img-placeholder { min-height: 180px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== 飘落花瓣画布 ==================== -->
+    <canvas id="petals-canvas" aria-hidden="true"></canvas>
+
+    <!-- ==================== 音乐播放器（黑胶唱片样式） ==================== -->
+    <!--
+    🎵 背景音乐说明：
+    当前使用的是一段浪漫钢琴曲（来自免费音乐资源）。
+    如需更换，请修改下方 <audio> 标签的 src 属性。
+    推荐替换为你们共同喜欢的歌曲 MP3 链接。
+    -->
+    <div class="music-player" id="musicPlayer" role="button" aria-label="音乐播放/暂停" title="点击播放/暂停背景音乐">
+        <div class="vinyl-record" id="vinylRecord">
+            <div class="tonearm" id="tonearm"></div>
+            <div class="vinyl-center"></div>
+        </div>
+        <div class="music-tooltip">🎵 点我播放浪漫音乐</div>
+    </div>
+
+    <!--
+    ==================== 🎵 背景音乐说明 ====================
+    音频文件使用本地路径：music/romantic-bg.mp3
+
+    🎹 推荐免费浪漫钢琴曲下载（任选其一即可）：
+      1. Pixabay - Romantic Piano（最推荐）：
+         https://pixabay.com/music/modern-classical-romantic-piano-422281/
+         点击 "Free Download" 按钮即可免费下载 MP3
+      2. Pixabay - Romantic Piano Solo：
+         https://pixabay.com/music/modern-classical-romantic-piano-solo-334664/
+      3. Pixabay - Beautiful Romantic Piano：
+         https://pixabay.com/music/modern-classical-beautiful-romantic-piano-359365/
+
+    📁 下载后将 MP3 文件重命名为 romantic-bg.mp3，
+       放入 music/ 文件夹即可自动播放。
+       也可以将 src 改为你喜欢的任何歌曲链接。
+    ========================================================
+    -->
+    <audio id="bgMusic" loop preload="auto"
+           src="music/romantic-bg.mp3">
+        您的浏览器不支持音频播放。
+    </audio>
+
+    <!-- ==================== Hero 主视觉区 ==================== -->
+    <section class="hero" id="hero">
+        <div class="hero-decoration fade-in delay-1">🌸</div>
+        <h1 class="hero-title fade-in-up delay-2">
+            To My Dear Xinya
+            <span class="cn">写给欣雅的一封情书</span>
+        </h1>
+        <p class="hero-subtitle fade-in-up delay-3">
+            遇见你，是银河赠予我的糖 <span class="hero-heart">💗</span><br>
+            今天是我们在一起的第 <strong style="color: var(--rose);" id="heroDays">--</strong> 天<br>
+            想用这种方式，记录下我们的点点滴滴<br>
+            虽然我们刚经历争吵，但希望我们<span style="color: var(--rose); font-weight: 600;">永以为好</span>
+        </p>
+        <div class="hero-scroll fade-in delay-5" onclick="document.getElementById('timeline').scrollIntoView({behavior:'smooth'})">
+            向下滑动，走进我们的故事
+            <span class="arrow">↓</span>
+        </div>
+    </section>
+
+    <!-- 分隔装饰 -->
+    <div class="section-divider fade-in">— ✿ — ✿ — ✿ —</div>
+
+    <!-- ==================== 时间轴：我们的故事线 ==================== -->
+    <section class="timeline-section" id="timeline">
+        <h2 class="section-title fade-in-up">
+            Our Story
+            <span class="cn-sub">📸 我们的故事线</span>
+        </h2>
+
+        <div class="timeline">
+
+            <!-- 节点 1 -->
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-card">
+                    <!--
+                    🖼️ 图片占位 1：
+                    请将 src 替换为你的第一张照片路径
+                    例如：src="images/photo1.jpg"
+                    -->
+                    <img src="images/photo1.jpg"
+                         alt="我们的第一张照片"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                         loading="lazy">
+                    <div class="img-placeholder-text" style="display:none; position:relative; height:240px; align-items:center; justify-content:center; color:var(--pink-deep); font-size:14px;">
+                        🌸 点击此处替换为你们的照片 1
+                    </div>
+                    <p class="timeline-label">📷 属于我们的第一个美好瞬间</p>
+                </div>
+                <div style="width:8%;"></div>
+            </div>
+
+            <!-- 节点 2 -->
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-card">
+                    <!--
+                    🖼️ 图片占位 2：
+                    请将 src 替换为你的第二张照片路径
+                    例如：src="images/photo2.jpg"
+                    -->
+                    <img src="images/photo2.jpg"
+                         alt="我们的第二张照片"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                         loading="lazy">
+                    <div class="img-placeholder-text" style="display:none; position:relative; height:240px; align-items:center; justify-content:center; color:var(--pink-deep); font-size:14px;">
+                        🌸 点击此处替换为你们的照片 2
+                    </div>
+                    <p class="timeline-label">📷 和你在一起的每一天都值得纪念</p>
+                </div>
+                <div style="width:8%;"></div>
+            </div>
+
+            <!-- 节点 3 -->
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-card">
+                    <!--
+                    🖼️ 图片占位 3：
+                    请将 src 替换为你的第三张照片路径
+                    例如：src="images/photo3.jpg"
+                    -->
+                    <img src="images/photo3.jpg"
+                         alt="我们的第三张照片"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                         loading="lazy">
+                    <div class="img-placeholder-text" style="display:none; position:relative; height:240px; align-items:center; justify-content:center; color:var(--pink-deep); font-size:14px;">
+                        🌸 点击此处替换为你们的照片 3
+                    </div>
+                    <p class="timeline-label">📷 未来的故事，我们继续一起写</p>
+                </div>
+                <div style="width:8%;"></div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 分隔装饰 -->
+    <div class="section-divider fade-in">— ❀ — ❀ — ❀ —</div>
+
+    <!-- ==================== 情书正文 ==================== -->
+    <section class="letter-section" id="letter">
+        <h2 class="section-title fade-in-up">
+            A Letter For You
+            <span class="cn-sub">✉️ 一封给你的信</span>
+        </h2>
+
+        <div class="letter-card fade-in-up delay-2">
+            <div class="letter-greeting">亲爱的欣雅：</div>
+            <div class="letter-body">
+                <p>见字如面。</p>
+                <p>
+                    不知不觉，我们已经一起走过了这么多珍贵的日子。在这个快节奏的世界里，爱变成了一件需要运气的事情，而我何其幸运，能够在这茫茫人海中与你相遇、相知、相守。
+                </p>
+                <p>
+                    我常常会想起我们刚在一起时的样子，那时候的羞涩与心动，至今想起来依然让我的世界开满鲜花。后来啊，那些浪漫便落在了每一个平凡的日常里：是下雨天撑伞时你悄悄向我倾斜的角度，是深夜里互相分享的无聊笑话，是每一个疲惫时刻只要想到你，心底就会升起的温热。和你在一起的每一天，连空气似乎都带着淡淡的甜味。
+                </p>
+                <p>
+                    谢谢你，成为了我生命中最温柔的底色，包容我的小脾气，分享我的每一份快乐与忧伤。因为有你，我开始期待每一个明天，期待和你有更长更远的未来。
+                </p>
+                <p>
+                    愿年年岁岁，朝朝暮暮，我们都能像现在这样，牵着彼此的手，看遍世间的风景。
+                </p>
+            </div>
+            <div class="letter-signature">
+                <span class="name">永远爱你的然然</span><br>
+                <span class="date">2026年6月2日</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 分隔装饰 -->
+    <div class="section-divider fade-in">— ✿ — ✿ — ✿ —</div>
+
+    <!-- ==================== 互动区域：计时器 ==================== -->
+    <section class="interactive-section" id="interactive">
+        <h2 class="section-title fade-in-up">
+            Counting Every Moment
+            <span class="cn-sub">⏳ 每一秒都在想你</span>
+        </h2>
+
+        <div class="countdown-container">
+            <!-- 纪念日计时器 -->
+            <div class="countdown-card fade-in-up delay-2">
+                <div class="countdown-icon">💞</div>
+                <div class="countdown-title">我们已经相爱了</div>
+                <div class="countdown-timer" id="loveTimer">
+                    <span class="num" id="loveDays">0</span><span class="unit">天</span>
+                    <span class="num" id="loveHours">0</span><span class="unit">时</span>
+                    <span class="num" id="loveMinutes">0</span><span class="unit">分</span>
+                    <span class="num" id="loveSeconds">0</span><span class="unit">秒</span>
+                </div>
+                <div class="meet-countdown-extra" id="loveTotalDays">
+                    从 2026年5月30日 开始计算
+                </div>
+            </div>
+
+            <!-- 下一次见面倒计时 -->
+            <div class="countdown-card fade-in-up delay-4">
+                <div class="countdown-icon">🕊️</div>
+                <div class="countdown-title">距离下一次见面还有</div>
+                <div class="countdown-timer" id="meetTimer">
+                    <span class="num" id="meetDays">0</span><span class="unit">天</span>
+                    <span class="num" id="meetHours">0</span><span class="unit">时</span>
+                    <span class="num" id="meetMinutes">0</span><span class="unit">分</span>
+                    <span class="num" id="meetSeconds">0</span><span class="unit">秒</span>
+                </div>
+                <div class="meet-countdown-extra">
+                    🗓️ 下次见面：<strong>这个星期六</strong>（2026年6月6日）
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==================== 网页尾部 ==================== -->
+    <footer class="footer">
+        <div class="footer-decoration">💐</div>
+        <span class="cn">愿年年岁岁，朝朝暮暮都有你</span>
+        <span class="en">From 然然 with Love ❤️</span>
+        <span class="en" style="margin-top: 12px; font-size: 0.75rem; opacity: 0.5;">
+            Made with 💗 · 2026
+        </span>
+    </footer>
+
+    <!-- ==================== JavaScript ==================== -->
+    <script>
+    (function() {
+        'use strict';
+
+        // ==================== 纪念日配置 ====================
+        // 🗓️ 修改这里来更改纪念日：年, 月(0-11), 日, 时, 分, 秒
+        const ANNIVERSARY = new Date(2026, 4, 30, 0, 0, 0); // 2026年5月30日
+
+        // 🗓️ 下一次见面时间配置（这个星期六：2026年6月6日 00:00:00）
+        const NEXT_MEET = new Date(2026, 5, 6, 0, 0, 0); // 2026年6月6日
+
+        // ==================== 飘落花瓣动画 ====================
+        const canvas = document.getElementById('petals-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let petals = [];
+        const MAX_PETALS = 35; // 花瓣数量（手机上减少以保证流畅）
+
+        // 根据屏幕宽度动态调整花瓣数量
+        function getMaxPetals() {
+            return window.innerWidth < 768 ? 20 : 35;
+        }
+
+        // 花瓣形状绘制
+        function drawPetal(ctx, x, y, size, rotation, color, opacity) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rotation);
+            ctx.globalAlpha = opacity;
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            // 绘制樱花花瓣形状（椭圆变形）
+            ctx.ellipse(0, 0, size, size * 0.55, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // 花瓣尖端小缺口
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(size * 0.7, 0, size * 0.2, size * 0.12, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // 初始化花瓣
+        function initPetals() {
+            const count = getMaxPetals();
+            petals = [];
+            for (let i = 0; i < count; i++) {
+                petals.push(createPetal(true));
+            }
+        }
+
+        function createPetal(randomY) {
+            const colors = [
+                'rgba(255, 220, 228, 0.85)', // 浅粉
+                'rgba(255, 200, 215, 0.8)',  // 柔和粉
+                'rgba(255, 180, 200, 0.75)', // 中粉
+                'rgba(245, 200, 210, 0.8)',  // 暖粉
+                'rgba(255, 210, 220, 0.7)',  // 淡粉
+            ];
+            return {
+                x: Math.random() * canvas.width,
+                y: randomY ? Math.random() * canvas.height : -20 - Math.random() * 60,
+                size: 4 + Math.random() * 14, // 花瓣大小
+                speedY: 0.3 + Math.random() * 1.0, // 垂直下落速度
+                speedX: -0.3 + Math.random() * 0.6, // 水平飘动速度
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: -0.02 + Math.random() * 0.04,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                opacity: 0.5 + Math.random() * 0.5,
+                sway: Math.random() * Math.PI * 2, // 左右摇摆相位
+                swaySpeed: 0.01 + Math.random() * 0.02,
+                swayAmount: 0.5 + Math.random() * 1.5,
+            };
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initPetals();
+        }
+
+        function animatePetals() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < petals.length; i++) {
+                const p = petals[i];
+                p.y += p.speedY;
+                p.sway += p.swaySpeed;
+                p.x += p.speedX + Math.sin(p.sway) * p.swayAmount * 0.4;
+                p.rotation += p.rotationSpeed;
+
+                // 花瓣超出底部或两侧时重置到顶部
+                if (p.y > canvas.height + 30 || p.x < -40 || p.x > canvas.width + 40) {
+                    petals[i] = createPetal(false);
+                }
+
+                drawPetal(ctx, p.x, p.y, p.size, p.rotation, p.color, p.opacity);
+            }
+
+            requestAnimationFrame(animatePetals);
+        }
+
+        // ==================== 音乐播放器 ====================
+        const musicPlayer = document.getElementById('musicPlayer');
+        const vinylRecord = document.getElementById('vinylRecord');
+        const tonearm = document.getElementById('tonearm');
+        const bgMusic = document.getElementById('bgMusic');
+        const tooltip = document.querySelector('.music-tooltip');
+        let isMusicPlaying = false;
+        let musicStarted = false;
+        let musicLoadFailed = false; // 音乐文件是否加载失败
+
+        // 监听音频加载错误（文件不存在等）
+        bgMusic.addEventListener('error', function() {
+            musicLoadFailed = true;
+            tooltip.textContent = '📁 请先下载音乐文件放入 music/ 文件夹';
+            console.log('💡 音乐文件未找到。请查看 music/README.txt 了解如何下载免费浪漫钢琴曲。');
+        });
+
+        // 监听音频成功加载
+        bgMusic.addEventListener('loadeddata', function() {
+            musicLoadFailed = false;
+            tooltip.textContent = '🎵 点我播放浪漫音乐';
+        });
+
+        function toggleMusic() {
+            if (musicLoadFailed) {
+                // 音乐文件不存在，友好提示
+                tooltip.textContent = '📁 请查看 music/README.txt 下载音乐';
+                setTimeout(() => { tooltip.textContent = '🎵 点我播放浪漫音乐'; }, 3000);
+                return;
+            }
+
+            if (bgMusic.paused) {
+                const playPromise = bgMusic.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isMusicPlaying = true;
+                        vinylRecord.classList.add('playing');
+                        tonearm.classList.add('playing');
+                        tooltip.textContent = '🎵 正在播放 · 点击暂停';
+                        musicStarted = true;
+                    }).catch((err) => {
+                        console.log('音乐播放需要用户交互，请再点击一次 💗');
+                        tooltip.textContent = '💗 再点一次即可播放';
+                        isMusicPlaying = false;
+                        vinylRecord.classList.remove('playing');
+                        tonearm.classList.remove('playing');
+                    });
+                }
+            } else {
+                bgMusic.pause();
+                isMusicPlaying = false;
+                vinylRecord.classList.remove('playing');
+                tonearm.classList.remove('playing');
+                tooltip.textContent = '🎵 点击播放浪漫音乐';
+            }
+        }
+
+        musicPlayer.addEventListener('click', toggleMusic);
+
+        // 首次用户交互时尝试自动播放
+        function tryAutoPlay() {
+            if (musicLoadFailed) return;
+            if (!musicStarted && bgMusic.paused) {
+                bgMusic.play().then(() => {
+                    isMusicPlaying = true;
+                    vinylRecord.classList.add('playing');
+                    tonearm.classList.add('playing');
+                    tooltip.textContent = '🎵 正在播放 · 点击暂停';
+                    musicStarted = true;
+                }).catch(() => {
+                    tooltip.textContent = '🎵 点我播放浪漫音乐';
+                });
+            }
+        }
+
+        // 页面首次点击时尝试自动播放
+        document.addEventListener('click', function autoPlayHandler(e) {
+            if (!musicStarted && e.target !== musicPlayer && !musicPlayer.contains(e.target)) {
+                tryAutoPlay();
+            }
+            if (musicStarted) {
+                document.removeEventListener('click', autoPlayHandler);
+            }
+        }, { once: false });
+
+        // ==================== 计时器更新 ====================
+        function updateTimers() {
+            const now = new Date();
+
+            // 相爱计时器
+            const loveDiff = now - ANNIVERSARY;
+            const loveTotalSeconds = Math.floor(loveDiff / 1000);
+            const loveDays = Math.floor(loveTotalSeconds / 86400);
+            const loveHours = Math.floor((loveTotalSeconds % 86400) / 3600);
+            const loveMinutes = Math.floor((loveTotalSeconds % 3600) / 60);
+            const loveSeconds = loveTotalSeconds % 60;
+
+            document.getElementById('loveDays').textContent = loveDays;
+            document.getElementById('loveHours').textContent = String(loveHours).padStart(2, '0');
+            document.getElementById('loveMinutes').textContent = String(loveMinutes).padStart(2, '0');
+            document.getElementById('loveSeconds').textContent = String(loveSeconds).padStart(2, '0');
+            document.getElementById('loveTotalDays').textContent =
+                '从 2026年5月30日 开始，已经走过 ' + loveDays + ' 个日日夜夜';
+
+            // Hero 区域天数
+            document.getElementById('heroDays').textContent = loveDays;
+
+            // 见面倒计时
+            const meetDiff = NEXT_MEET - now;
+            if (meetDiff > 0) {
+                const meetTotalSeconds = Math.floor(meetDiff / 1000);
+                const meetDays = Math.floor(meetTotalSeconds / 86400);
+                const meetHours = Math.floor((meetTotalSeconds % 86400) / 3600);
+                const meetMinutes = Math.floor((meetTotalSeconds % 3600) / 60);
+                const meetSeconds = meetTotalSeconds % 60;
+
+                document.getElementById('meetDays').textContent = meetDays;
+                document.getElementById('meetHours').textContent = String(meetHours).padStart(2, '0');
+                document.getElementById('meetMinutes').textContent = String(meetMinutes).padStart(2, '0');
+                document.getElementById('meetSeconds').textContent = String(meetSeconds).padStart(2, '0');
+            } else {
+                // 已经见面啦！
+                document.getElementById('meetTimer').innerHTML =
+                    '<span style="font-size:1.2rem;color:var(--rose);">🎉 已经见面啦！</span>';
+                document.querySelector('.meet-countdown-extra').textContent = '💗 享受在一起的每一刻';
+            }
+        }
+
+        // ==================== 滚动动画（时间轴元素淡入） ====================
+        function handleScrollReveal() {
+            const items = document.querySelectorAll('.timeline-item');
+            const windowHeight = window.innerHeight;
+
+            items.forEach((item) => {
+                const rect = item.getBoundingClientRect();
+                const revealPoint = windowHeight * 0.8;
+
+                if (rect.top < revealPoint) {
+                    item.classList.add('visible');
+                }
+            });
+        }
+
+        // ==================== 初始化 ====================
+        function init() {
+            resizeCanvas();
+            animatePetals();
+            updateTimers();
+            setInterval(updateTimers, 1000); // 每秒更新计时器
+            handleScrollReveal();
+        }
+
+        // 事件监听
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('scroll', handleScrollReveal);
+        window.addEventListener('load', init);
+
+        // 页面加载完成后再触发一次滚动检测
+        setTimeout(handleScrollReveal, 500);
+
+        console.log('💌 情书页面已就绪！');
+        console.log('🌸 纪念日：2026年5月30日');
+        console.log('🕊️ 下次见面：2026年6月6日（星期六）');
+        console.log('💡 提示：将照片放入 images/ 文件夹，命名为 photo1.jpg、photo2.jpg、photo3.jpg');
+        console.log('🎵 点击右上角黑胶唱片播放/暂停背景音乐');
+    })();
+    </script>
+
+</body>
+</html>
